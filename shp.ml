@@ -2,16 +2,14 @@ type point = { x: float; y: float; z: float; m: float }
 
 let print_point = fun p -> Printf.printf "x=%f y=%f z=%f m=%f\n" p.x p.y p.z p.m
 
-type bbox = {
-    xmin: float; xmax: float; ymin: float; ymax: float;
-    zmin: float; zmax: float; mmin: float; mmax: float }
+type bbox = { xmin: float; xmax: float; ymin: float; ymax: float;
+	      zmin: float; zmax: float; mmin: float; mmax: float }
 
 let bbox = fun xmin xmax ymin ymax zmin zmax mmin mmax ->
-  let xmin = Int64.float_of_bits xmin and ymin = Int64.float_of_bits ymin
-  and xmax = Int64.float_of_bits xmax and ymax = Int64.float_of_bits ymax
-  and zmin = Int64.float_of_bits zmin and zmax = Int64.float_of_bits zmax
-  and mmin = Int64.float_of_bits mmin and mmax = Int64.float_of_bits mmax in
-  { xmin; xmax; ymin; ymax; zmin; zmax; mmin; mmax }
+  { xmin = Int64.float_of_bits xmin; ymin = Int64.float_of_bits ymin;
+    xmax = Int64.float_of_bits xmax; ymax = Int64.float_of_bits ymax;
+    zmin = Int64.float_of_bits zmin; zmax = Int64.float_of_bits zmax;
+    mmin = Int64.float_of_bits mmin; mmax = Int64.float_of_bits mmax }
 
 let bbox2D = fun xmin xmax ymin ymax -> bbox xmin xmax ymin ymax 0L 0L 0L 0L
 let bbox2DM = fun xmin xmax ymin ymax mmin mmax ->
@@ -79,18 +77,29 @@ let make_rings = fun nparts npoints parts points ->
     Array.sub points parts.(i)
       ((if i < nparts - 1 then parts.(i+1) else npoints) - parts.(i)))
 
-type multi = { shp_bbox: bbox; rings: point array array }
+type points = point array
 
 type shape =
-  | Null | Point | PolyLine
-  | Polygon of multi
-  | MultiPoint
+  | Null
+  | Point of point
+  | MultiPoint of bbox * points
+  | PolyLine of bbox * points array
+  | Polygon of bbox * points array
   | PointZ | PolyLineZ | PolygonZ | MultiPointZ
   | PointM | PolyLineM | PolygonM | MultiPointM | MultiPatch
 
 let record = fun bits ->
   bitmatch bits with
-  | { shape: 32 : littleendian, check (Int32.to_int shape = 5); (* Polygon *)
+  | { shape: 32 : littleendian, check (Int32.to_int shape = 0); (* Null *)
+      rest: -1 : bitstring } -> Null, rest
+  | { shape: 32 : littleendian, check (Int32.to_int shape = 1); (* Point *)
+      x: 64 : littleendian; y: 64 : littleendian;
+      rest: -1 : bitstring } ->
+	let x = Int64.float_of_bits x and y = Int64.float_of_bits y in
+	Point { x; y; z = 0.; m = 0. }, rest
+(* TODO : multipoint *)
+  | { shape: 32 : littleendian, bind (Int32.to_int shape), (* PolyLine or Polygon *)
+      check (Int32.to_int shape = 3 || Int32.to_int shape = 5);
       xmin: 64 : littleendian; ymin: 64 : littleendian;
       xmax: 64 : littleendian; ymax: 64 : littleendian;
       nparts: 32 : littleendian; npoints: 32 : littleendian;
@@ -98,10 +107,13 @@ let record = fun bits ->
       points: 128 * (Int32.to_int npoints) : bitstring;
       rest: -1 : bitstring
     } ->
-      let shp_bbox = bbox2D xmin xmax ymin ymax in
+      let bbox = bbox2D xmin xmax ymin ymax in
       let nparts = Int32.to_int nparts and npoints = Int32.to_int npoints in
       let rings = make_rings nparts npoints parts points in
-      Polygon { shp_bbox; rings }, rest
+      let shp =
+	if shape = 3 then PolyLine (bbox, rings)
+	else Polygon (bbox, rings) in
+      shp, rest
 
 let records = fun bits ->
   let res = ref [] and bits = ref bits in
