@@ -1,0 +1,6 @@
+name = "ocamlshp"
+description = "Shapefile reader for OCaml"
+version = "0.1"
+requires = "bitstring"
+archive(byte) = "shp.cma"
+archive(native) = "shp.cmxa"
