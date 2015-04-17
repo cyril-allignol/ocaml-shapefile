@@ -1,12 +1,12 @@
 NAME = shp
-SRC = shp.ml
+SRC = d2.ml d2M.ml d3M.ml common.ml shp.ml shx.ml
 
 REQUIRES = "bitstring bitstring.syntax"
 
 PP = -pp "camlp4of -I /usr/lib/ocaml/bitstring bitstring.cma bitstring_persistent.cma pa_bitstring.cmo"
 
 OCAMLC   = ocamlfind ocamlc -g -annot
-OCAMLOPT = ocamlfind ocamlopt -unsafe -noassert -inline 100
+OCAMLOPT = ocamlfind ocamlopt -noassert -inline 100
 OCAMLDOC = ocamlfind ocamldoc
 OCAMLDEP = ocamldep.opt
 
@@ -38,7 +38,7 @@ $(XLIB): $(XOBJS)
 .PHONY : doc clean clean_doc
 doc : $(MLIS)
 	mkdir -p $(DOC_DIR)
-	$(OCAMLDOC) -html -d $(DOC_DIR) $^
+	$(OCAMLDOC) -html -d $(DOC_DIR) -package $(REQUIRES) $^
 clean:
 	rm -f *.cm[iox] $(LIB) $(XLIB) *.o $(NAME).a *~ *.annot .depend
 cleandoc :

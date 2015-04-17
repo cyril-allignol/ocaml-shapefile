@@ -1,55 +1,28 @@
-module XY : sig
-  type point = { x: float; y: float }
-  type bbox = { xmin: float; xmax: float; ymin: float; ymax: float }
-end
+(** Read and write ESRI Shapefiles. *)
 
-module XYM : sig
-  type point = { x: float; y: float; m: float }
-  type bbox = { xmin: float; xmax: float; ymin: float; ymax: float;
-		mmin: float; mmax: float }
-end
-
-module XYZM : sig
-  type point = { x: float; y: float; z: float; m: float }
-  type bbox = { xmin: float; xmax: float; ymin: float; ymax: float;
-		zmin: float; zmax: float; mmin: float; mmax: float }
-end
-
-type point = float array
-type bbox = float array
-
-(*
-type shape =
-  | Null
-  | Point of XY.point
-  | MultiPoint of XY.bbox * XY.point array
-  | PolyLine of XY.bbox * XY.point array array
-  | Polygon of XY.bbox * XY.point array array
-  | PointM of XYM.point
-  | PolyLineM of XYM.bbox * XYM.point array array
-  | PolygonM of XYM.bbox * XYM.point array array
-  | MultiPointM of XYM.bbox * XYM.point array
-  | PointZ of XYZM.point
-  | PolyLineZ of XYZM.bbox * XYZM.point array array
-  | PolygonZ of XYZM.bbox * XYZM.point array array
-  | MultiPointZ of XYZM.bbox * XYZM.point array
-  | MultiPatch
-*)
+(** This implementation follows the technical description provided by ESRI.
+    This description can be found
+    {{:https://www.esri.com/library/whitepapers/pdfs/shapefile.pdf}here}. *)
 
 type shape =
-  | Null
-  | Point of point
-  | MultiPoint of bbox * point array
-  | PolyLine of bbox * point array array
-  | Polygon of bbox * point array array
-  | PointM of point
-  | PolyLineM of bbox * point array array
-  | PolygonM of bbox * point array array
-  | MultiPointM of bbox * point array
-  | PointZ of point
-  | PolyLineZ of bbox * point array array
-  | PolygonZ of bbox * point array array
-  | MultiPointZ of bbox * point array
-  | MultiPatch
+  | Null (** the null shape *)
+  | Point of D2.point
+  | PointM of D2M.point
+  | PointZ of D3M.point (** a single point *)
+  | MultiPoint of D2.bbox * D2.point array
+  | MultiPointM of D2M.bbox * D2M.point array
+  | MultiPointZ of D3M.bbox * D3M.point array
+	(** a set of points with its bounding box *)
+  | PolyLine of D2.bbox * D2.point array array
+  | PolyLineM of D2M.bbox * D2M.point array array
+  | PolyLineZ of D3M.bbox * D3M.point array array
+	(** a set of lines with its bounding box *)
+  | Polygon of D2.bbox * D2.point array array
+  | PolygonM of D2M.bbox * D2M.point array array
+  | PolygonZ of D3M.bbox * D3M.point array array
+	(** a polygon (set of rings) with its bounding box *)
+  | MultiPatch (** not implemented yet *)
+(** The type of a shape. *)
 
 val read: string -> shape list
+(** [Shp.read file] parses the [file] and returns a list of shapes. *)
