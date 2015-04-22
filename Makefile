@@ -1,17 +1,27 @@
 NAME = shp
-SRC = d2.ml d2M.ml d3M.ml common.ml shp.ml shx.ml
+SRC = d2.ml d2M.ml d3M.ml common.ml shp.ml shx.ml \
+      prj_syntax.ml prj_parser.mly prj_lexer.mll prj.ml
 
 REQUIRES = "bitstring bitstring.syntax"
 
 PP = -pp "camlp4of -I /usr/lib/ocaml/bitstring bitstring.cma bitstring_persistent.cma pa_bitstring.cmo"
 
-OCAMLC   = ocamlfind ocamlc -g -annot
-OCAMLOPT = ocamlfind ocamlopt -noassert -inline 100
-OCAMLDOC = ocamlfind ocamldoc
-OCAMLDEP = ocamldep.opt
+OCAMLC    = ocamlfind ocamlc -g -annot
+OCAMLOPT  = ocamlfind ocamlopt -noassert -inline 100
+OCAMLDOC  = ocamlfind ocamldoc
+OCAMLYACC = ocamlyacc -v
+OCAMLLEX  = ocamllex.opt
+OCAMLDEP  = ocamldep.opt
 
-OBJS = $(SRC:.ml=.cmo)
-XOBJS = $(SRC:.ml=.cmx)
+MLYS = $(filter %.mly, $(SRC))
+MLLS = $(filter %.mll, $(SRC))
+AUX_MLS = $(MLYS:.mly=.mli) $(MLYS:.mly=.ml) $(MLLS:.mll=.ml)
+
+SRC_INTER = $(SRC:.mly=.ml)
+FILES = $(SRC_INTER:.mll=.ml)
+
+OBJS = $(FILES:.ml=.cmo)
+XOBJS = $(FILES:.ml=.cmx)
 
 LIB = $(NAME).cma
 XLIB = $(NAME).cmxa
@@ -20,32 +30,49 @@ DOC_DIR = doc/
 MLIS = $(SRC:.ml=.mli)
 
 .PHONY : all
-all: .depend $(LIB) $(XLIB)
+all: $(LIB) $(XLIB)
+	@echo Building successful
 
 $(LIB): $(OBJS)
-	$(OCAMLC) -a -o $@ -package $(REQUIRES) $(PP) $^
+	@echo "Creating byte library $@                  "
+	@$(OCAMLC) -a -o $@ -package $(REQUIRES) $(PP) $^
 $(XLIB): $(XOBJS)
-	$(OCAMLOPT) -a -o $@ -package $(REQUIRES) $(PP) $^
+	@echo "Creating native library $@                "
+	@$(OCAMLOPT) -a -o $@ -package $(REQUIRES) $(PP) $^
 
-.SUFFIXES: .ml .mli .cmo .cmi .cmx
+.SUFFIXES: .ml .mli .cmo .cmi .cmx .mly .mll
 %.cmo: %.ml
-	$(OCAMLC) -package $(REQUIRES) $(PP) -c $<
+	@echo -n "Compiling $< to $@\r"
+	@$(OCAMLC) -package $(REQUIRES) $(PP) -c $<
 %.cmi: %.mli
-	$(OCAMLC) -package $(REQUIRES) $(PP) $<
+	@echo -n "Compiling interface $<\r"
+	@$(OCAMLC) -package $(REQUIRES) $(PP) $<
 %.cmx: %.ml
-	$(OCAMLOPT) -package $(REQUIRES) $(PP) -c $<
+	@echo -n "Compiling $< to $@\r"
+	@$(OCAMLOPT) -package $(REQUIRES) $(PP) -c $<
+%.ml %.mli: %.mly
+	@echo Building parser from $<
+	@$(OCAMLYACC) $<
+%.ml: %.mll
+	@echo Building lexical analyser from $<:
+	@$(OCAMLLEX) $<
 
 .PHONY : doc clean clean_doc
 doc : $(MLIS)
-	mkdir -p $(DOC_DIR)
-	$(OCAMLDOC) -html -d $(DOC_DIR) -package $(REQUIRES) $^
+	@echo Building doc in $(DOC_DIR)
+	@mkdir -p $(DOC_DIR)
+	@$(OCAMLDOC) -html -d $(DOC_DIR) -package $(REQUIRES) $^
 clean:
-	rm -f *.cm[iox] $(LIB) $(XLIB) *.o $(NAME).a *~ *.annot .depend
+	@echo Cleaning build
+	@rm -f *.cm[iox] $(AUX_MLS) $(LIB) $(XLIB) *.o *.output $(NAME).a *~ *.annot .depend
+	@touch .depend
 cleandoc :
-	rm -rf $(DOC_DIR)
+	@echo Cleaning doc
+	@rm -rf $(DOC_DIR)
 
-.depend:
-	$(OCAMLDEP) $(PP) *.mli *.ml >.depend
+.depend: $(FILES)
+	@echo Computing dependencies
+	@$(OCAMLDEP) $(PP) *.mli *.ml *.mly *.mll > .depend
 
 include .depend
 
