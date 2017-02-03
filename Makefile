@@ -4,7 +4,9 @@ SRC = d2.ml d2M.ml d3M.ml common.ml shp.ml shx.ml \
 
 REQUIRES = "bitstring bitstring.syntax"
 
-PP = -pp "camlp4of -I /usr/lib/ocaml/bitstring bitstring.cma bitstring_persistent.cma pa_bitstring.cmo"
+OCAML = `ocamlfind printconf path`
+SYNTAX = camlp4of -I $(OCAML)/bitstring bitstring.cma bitstring_persistent.cma pa_bitstring.cmo
+PP = -pp "$(SYNTAX)"
 
 OCAMLC    = ocamlfind ocamlc -g -annot
 OCAMLOPT  = ocamlfind ocamlopt -noassert -inline 100
