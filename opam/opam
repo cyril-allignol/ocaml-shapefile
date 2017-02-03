@@ -1,0 +1,19 @@
+opam-version: "1.2"
+name: "shp"
+version: "dev"
+maintainer: "Cyril Allignol <cyril.allignol@enac.fr>"
+authors: ["Cyril Allignol <cyril.allignol@enac.fr>"]
+homepage: "https://git.recherche.enac.fr/projects/ocaml/ocamlshp"
+bug-reports: "https://git.recherche.enac.fr/projects/ocaml/ocamlshp/issues/new"
+dev-repo: "git@git.recherche.enac.fr:ocaml/ocamlshp.git"
+tags: [ "org:enac" ]
+build: [ [ make ] ]
+build-doc: [ [ make "doc" ] ]
+install: [ [ make "install" ] ]
+remove: [ [ "ocamlfind" "remove" "ocamlshp" ] ]
+depends: [
+  "ocamlbuild" {build}
+  "ocamlfind"
+  "bitstring"
+]
+flags: [ light-uninstall ]
