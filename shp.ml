@@ -1,10 +1,10 @@
 open Common
 
 let record_header = fun bits ->
-  bitmatch bits with
-  | { n: 32 : bigendian; l: 32 : bigendian; payload: -1 : bitstring } ->
+  match%bitstring bits with
+  | {| n: 32 : bigendian; l: 32 : bigendian; payload: -1 : bitstring |} ->
       b2i n, b2i l, payload
-  | {_} -> failwith "Shp.record_header"
+  | {|_|} -> failwith "Shp.record_header"
 
 type shape =
   | Null

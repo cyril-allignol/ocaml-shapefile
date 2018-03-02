@@ -1,90 +1,42 @@
 NAME = shp
-SRC = d2.ml d2M.ml d3M.ml common.ml shp.ml shx.ml \
-      prj_syntax.ml prj_parser.mly prj_lexer.mll prj.ml
 
-REQUIRES = "bitstring bitstring.syntax"
+BUILD = ocamlbuild -use-ocamlfind -quiet -j 0
 
-OCAML = `ocamlfind printconf path`
-SYNTAX = camlp4of -I $(OCAML)/bitstring bitstring.cma bitstring_persistent.cma pa_bitstring.cmo
-PP = -pp "$(SYNTAX)"
+INSTALL_FILES = $(NAME) META *.mli _build/*.cmi _build/$(NAME).cma
+OPT_INSTALL_FILES = _build/*.cmx _build/$(NAME).cmxa _build/$(NAME).a
 
-OCAMLC    = ocamlfind ocamlc -g -annot
-OCAMLOPT  = ocamlfind ocamlopt -noassert -inline 100
-OCAMLDOC  = ocamlfind ocamldoc
-OCAMLYACC = ocamlyacc -v
-OCAMLLEX  = ocamllex.opt
-OCAMLDEP  = ocamldep.opt
+all: $(NAME).cma $(NAME).cmxa
 
-MLYS = $(filter %.mly, $(SRC))
-MLLS = $(filter %.mll, $(SRC))
-AUX_MLS = $(MLYS:.mly=.mli) $(MLYS:.mly=.ml) $(MLLS:.mll=.ml)
+%:
+	@echo -n "Building $@... "; $(BUILD) $@; echo "done"
 
-SRC_INTER = $(SRC:.mly=.ml)
-FILES = $(SRC_INTER:.mll=.ml)
+doc:
+	@$(BUILD) $(NAME).docdir/index.html
 
-OBJS = $(FILES:.ml=.cmo)
-XOBJS = $(FILES:.ml=.cmx)
-
-LIB = $(NAME).cma
-XLIB = $(NAME).cmxa
-
-DOC_DIR = doc/
-MLIS = $(SRC:.ml=.mli)
-
-.PHONY : all
-all: $(LIB) $(XLIB)
-	@echo Building successful
-
-$(LIB): $(OBJS)
-	@echo "Creating byte library $@                  "
-	@$(OCAMLC) -a -o $@ -package $(REQUIRES) $(PP) $^
-$(XLIB): $(XOBJS)
-	@echo "Creating native library $@                "
-	@$(OCAMLOPT) -a -o $@ -package $(REQUIRES) $(PP) $^
-
-.SUFFIXES: .ml .mli .cmo .cmi .cmx .mly .mll
-%.cmo: %.ml
-	@echo -n "Compiling $< to $@\r"
-	@$(OCAMLC) -package $(REQUIRES) $(PP) -c $<
-%.cmi: %.mli
-	@echo -n "Compiling interface $<\r"
-	@$(OCAMLC) -package $(REQUIRES) $(PP) $<
-%.cmx: %.ml
-	@echo -n "Compiling $< to $@\r"
-	@$(OCAMLOPT) -package $(REQUIRES) $(PP) -c $<
-%.ml %.mli: %.mly
-	@echo Building parser from $<
-	@$(OCAMLYACC) $<
-%.ml: %.mll
-	@echo Building lexical analyser from $<:
-	@$(OCAMLLEX) $<
-
-.PHONY : doc clean clean_doc
-doc : $(MLIS)
-	@echo Building doc in $(DOC_DIR)
-	@mkdir -p $(DOC_DIR)
-	@$(OCAMLDOC) -html -d $(DOC_DIR) -package $(REQUIRES) $^
 clean:
-	@echo Cleaning build
-	@rm -f *.cm[iox] $(AUX_MLS) $(LIB) $(XLIB) *.o *.output $(NAME).a *~ *.annot .depend
-	@touch .depend
-cleandoc :
-	@echo Cleaning doc
-	@rm -rf $(DOC_DIR)
+	@$(BUILD) -clean
 
-.depend: $(FILES)
-	@echo Computing dependencies
-	@$(OCAMLDEP) $(PP) *.mli *.ml *.mly *.mll > .depend
+update:
+	@$(MAKE) uninstall
+	@$(MAKE) install
 
-include .depend
+$(NAME).install:
+	@echo 'lib: [' >>$@
+	@echo '  "META"' >>$@
+	@echo '  "_build/$(NAME).cma"' >>$@
+	@echo '  "?_build/$(NAME).cmxa"' >>$@
+	@echo '  "?_build/$(NAME).a"' >>$@
+	@$(foreach x,$(wildcard _build/*.mli), echo '  "$x"' >>$@;)
+	@$(foreach x,$(wildcard _build/*.cmi), echo '  "$x"' >>$@;)
+	@$(foreach x,$(wildcard _build/*.cmx), echo '  "?$x"' >>$@;)
+	@echo ']' >>$@
+	@echo 'doc: [' >>$@
+	@$(foreach x,$(wildcard _build/$(NAME).docdir/*.html), echo '  "$x"' >>$@;)
+	@echo ']' >>$@
 
-.PHONY : install uninstall update
-install : all
-	@ocamlfind install $(NAME) *.mli *.cmi $(LIB) $(XLIB) $(NAME).a META
-
-uninstall :
+install:
+	@ocamlfind install $(INSTALL_FILES) -optional $(OPT_INSTALL_FILES)
+uninstall:
 	@ocamlfind remove $(NAME)
 
-update :
-	@ocamlfind remove $(NAME)
-	@ocamlfind install $(NAME) *.mli *.cmi $(LIB) $(XLIB) $(NAME).a META
+.PHONY: all doc clean install uninstall update

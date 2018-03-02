@@ -1,2 +1,2 @@
-PKG bitstring bitstring.syntax
-EXT bitstring.syntax
+B _build
+PKG bitstring bitstring.ppx

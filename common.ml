@@ -16,13 +16,13 @@ let print_point = fun p ->
   | _ -> invalid_arg "Shp.print_point"
 
 let get_int = fun bits -> (* littleendian *)
-  bitmatch bits with
-  | { v: 32 : littleendian, bind (b2i v); rem: -1 : bitstring } -> v, rem
+  match%bitstring bits with
+  | {| v: 32 : littleendian, bind (b2i v); rem: -1 : bitstring |} -> v, rem
 
 let get_float = fun bits ->
-  bitmatch bits with
-  | { v: 64 : littleendian, bind (Int64.float_of_bits v); rem: -1 : bitstring
-    } -> v, rem
+  match%bitstring bits with
+  | {| v: 64 : littleendian, bind (Int64.float_of_bits v); rem: -1 : bitstring
+     |} -> v, rem
 
 let get_array = fun get_elt size bits ->
   let bits = ref bits in
@@ -58,22 +58,22 @@ module ShapeMake (D : Data) = struct
 
   let multipoint = fun bits ->
     let bbox, bits = make_bbox bits in
-    bitmatch bits with
-    | { npoints: 32 : littleendian, bind (b2i npoints);
-	points: D.dim * 64 * npoints : bitstring;
-	rest: -1 : bitstring } ->
-	  bbox, make_points npoints points, rest
+    match%bitstring bits with
+    | {| npoints: 32 : littleendian, bind (b2i npoints);
+       points: D.dim * 64 * npoints : bitstring;
+       rest: -1 : bitstring |} ->
+       bbox, make_points npoints points, rest
 
   let multishape = fun bits ->
     let bbox, bits = make_bbox bits in
-    bitmatch bits with
-    | { nparts: 32 : littleendian, bind (b2i nparts);
-	npoints: 32 : littleendian, bind (b2i npoints);
-	parts: 32 * nparts : bitstring;
-	points: D.dim * 64 * npoints : bitstring;
-	rest: -1 : bitstring } ->
-	  let shapes = make_shapes nparts npoints parts points in
-	  bbox, shapes, rest
+    match%bitstring bits with
+    | {| nparts: 32 : littleendian, bind (b2i nparts);
+       npoints: 32 : littleendian, bind (b2i npoints);
+       parts: 32 * nparts : bitstring;
+       points: D.dim * 64 * npoints : bitstring;
+       rest: -1 : bitstring |} ->
+       let shapes = make_shapes nparts npoints parts points in
+       bbox, shapes, rest
 
 end
 
@@ -90,13 +90,13 @@ let print_header = fun h ->
   D3M.print_bbox h.bbox
 
 let header = fun bits ->
-  bitmatch bits with
-  | { code: 32 : bigendian, check (b2i code = 9994);
-      _: 5 * 32 : bitstring; (* 5 unused fields (32 bits each) *)
-      length: 32 : bigendian, bind (b2i length);
-      version: 32 : littleendian, bind (b2i version);
-      shape_type: 32 : littleendian, bind (b2i shape_type);
-      rest: -1 : bitstring } ->
-	let bbox, contents = ShpD3M.make_bbox rest in
-	{ length; version; shape_type; bbox }, contents
-  | { _ } -> failwith "Shp.header"
+  match%bitstring bits with
+  | {| code: 32 : bigendian, check (b2i code = 9994);
+     _: 5 * 32 : bitstring; (* 5 unused fields (32 bits each) *)
+     length: 32 : bigendian, bind (b2i length);
+     version: 32 : littleendian, bind (b2i version);
+     shape_type: 32 : littleendian, bind (b2i shape_type);
+     rest: -1 : bitstring |} ->
+     let bbox, contents = ShpD3M.make_bbox rest in
+     { length; version; shape_type; bbox }, contents
+  | {| _ |} -> failwith "Shp.header"
