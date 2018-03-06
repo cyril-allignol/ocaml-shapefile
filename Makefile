@@ -11,7 +11,7 @@ all: src/$(NAME).cma src/$(NAME).cmxa
 	@echo -n "Building $@... "; $(BUILD) $@; echo "done"
 
 doc:
-	@$(BUILD) $(NAME).docdir/index.html
+	@$(BUILD) src/$(NAME).docdir/index.html
 
 clean:
 	@$(BUILD) -clean
