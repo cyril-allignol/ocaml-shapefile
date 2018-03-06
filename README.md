@@ -2,11 +2,11 @@
 
 A small library to read shapefiles. The implementation follows the
 technical description provided by ESRI
-({{:https://www.esri.com/library/whitepapers/pdfs/shapefile.pdf}}).
+(https://www.esri.com/library/whitepapers/pdfs/shapefile.pdf).
 
 ## Install
 
-You will need the {{https://github.com/xguerin/bitstring}Bitstring}
+You will need the [Bitstring](https://github.com/xguerin/bitstring)
 library (version >= 3) to build, which you can install via opam:
 ```
 opam install bitstring
