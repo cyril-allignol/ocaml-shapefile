@@ -1,4 +1,4 @@
-NAME = shp
+NAME = shapefile
 
 BUILD = ocamlbuild -use-ocamlfind -quiet -j 0
 
@@ -19,20 +19,6 @@ clean:
 reinstall:
 	@$(MAKE) uninstall
 	@$(MAKE) install
-
-$(NAME).install:
-	@echo 'lib: [' >>$@
-	@echo '  "META"' >>$@
-	@echo '  "_build/$(NAME).cma"' >>$@
-	@echo '  "?_build/$(NAME).cmxa"' >>$@
-	@echo '  "?_build/$(NAME).a"' >>$@
-	@$(foreach x,$(wildcard _build/*.mli), echo '  "$x"' >>$@;)
-	@$(foreach x,$(wildcard _build/*.cmi), echo '  "$x"' >>$@;)
-	@$(foreach x,$(wildcard _build/*.cmx), echo '  "?$x"' >>$@;)
-	@echo ']' >>$@
-	@echo 'doc: [' >>$@
-	@$(foreach x,$(wildcard _build/$(NAME).docdir/*.html), echo '  "$x"' >>$@;)
-	@echo ']' >>$@
 
 install:
 	@ocamlfind install $(NAME) $(INSTALL_FILES) -optional $(OPT_INSTALL_FILES)
