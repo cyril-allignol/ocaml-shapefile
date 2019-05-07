@@ -1,4 +1,0 @@
-true: package(bitstring, bitstring.ppx)
-#<*.{ml,mli}>: package(bitstring,bitstring.ppx)
-<*.cmx*>: inline(100), unsafe, noassert
-<*.cm{o,a}>: debug
