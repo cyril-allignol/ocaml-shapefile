@@ -18,6 +18,8 @@ type point = { x: float; y: float; m: float }
 type bbox = { xmin: float; xmax: float; ymin: float; ymax: float;
 	      mmin: float; mmax: float }
 
+val print_bbox : bbox -> unit
+
 (**/**)
 val dim: int
 val a2p: float array -> point
