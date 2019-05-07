@@ -19,7 +19,7 @@ type index = {
     length: int  (** length of the shape description in 16-bits words *)
   } (** Type of an index record. *)
 
-val read: string -> index list
+val read: string -> Common.header * index list
 (** [Shx.read file] parses the [file] and returns a list of indexes,
     i.e. position and size of shape descriptions found in the corresponding
     .shp file. *)

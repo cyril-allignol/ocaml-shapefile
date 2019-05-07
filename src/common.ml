@@ -22,13 +22,6 @@ module type Data = sig
   val a2b: float array -> bbox
 end
 
-let print_point = fun p ->
-  match Array.length p with
-  | 2 -> Printf.printf "x=%f y=%f\n" p.(0) p.(1)
-  | 3 -> Printf.printf "x=%f y=%f m=%f\n" p.(0) p.(1) p.(2)
-  | 4 -> Printf.printf "x=%f y=%f z=%f m=%f\n" p.(0) p.(1) p.(2) p.(3)
-  | _ -> invalid_arg "Shp.print_point"
-
 let get_int = fun bits -> (* littleendian *)
   match%bitstring bits with
   | {| v: 32 : littleendian, bind (b2i v); rem: -1 : bitstring |} -> v, rem

@@ -65,4 +65,4 @@ let records = fun bits ->
 let read = fun file ->
   let bits = Bitstring.bitstring_of_file file in
   let header, contents = header bits in
-  records contents
+  header, records contents

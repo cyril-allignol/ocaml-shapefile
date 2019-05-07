@@ -38,5 +38,5 @@ type shape =
   | MultiPatch (** not implemented yet *)
 (** The type of a shape. *)
 
-val read: string -> shape list
+val read: string -> Common.header * shape list
 (** [Shp.read file] parses the [file] and returns a list of shapes. *)
