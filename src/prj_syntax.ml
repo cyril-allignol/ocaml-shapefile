@@ -184,15 +184,6 @@ module LocalCS = struct
       (sprint_opt Authority.sprint ld.authority)
 end
 
-type cs =
-  | Geographic of GeogCS.t
-  | Projected of ProjCS.t
-  | Geocentric of GeocCS.t
-  | Vert of VertCS.t
-  | Compd of string * cs * cs * Authority.t option
-  | Fitted of string * MT.t * cs
-  | Local of LocalCS.t
-
 module CS = struct
   type t =
     | Geographic of GeogCS.t
