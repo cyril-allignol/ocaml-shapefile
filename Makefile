@@ -1,28 +1,20 @@
-NAME = shapefile
-
-BUILD = ocamlbuild -use-ocamlfind -quiet -j 0
-
-INSTALL_FILES = META src/*.mli _build/src/*.cmi _build/src/$(NAME).cma
-OPT_INSTALL_FILES = _build/src/*.cmx _build/src/$(NAME).cmxa _build/src/$(NAME).a
-
-all: src/$(NAME).cma src/$(NAME).cmxa
-
-%:
-	@echo -n "Building $@... "; $(BUILD) $@; echo "done"
+all:
+	dune build
 
 doc:
-	@$(BUILD) src/$(NAME).docdir/index.html
+	dune build @doc
 
 clean:
-	@$(BUILD) -clean
+	dune clean
 
 reinstall:
-	@$(MAKE) uninstall
-	@$(MAKE) install
+	dune uninstall
+	dune install
 
 install:
-	@ocamlfind install $(NAME) $(INSTALL_FILES) -optional $(OPT_INSTALL_FILES)
+	dune install
+
 uninstall:
-	@ocamlfind remove $(NAME)
+	dune uninstall
 
 .PHONY: all doc clean install uninstall update

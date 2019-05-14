@@ -1,6 +1,0 @@
-name = "shapefile"
-description = "Shapefile reader for OCaml"
-version = "0.1"
-requires = "bitstring"
-archive(byte) = "shapefile.cma"
-archive(native) = "shapefile.cmxa"
