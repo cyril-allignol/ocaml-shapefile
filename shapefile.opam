@@ -15,5 +15,6 @@ depends: [
   "ocamlbuild" {build}
   "ocamlfind"
   "bitstring"
+  "menhir" {build}
 ]
 flags: [ light-uninstall ]
