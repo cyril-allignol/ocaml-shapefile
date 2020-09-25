@@ -5,11 +5,15 @@ technical description provided by ESRI
 (https://www.esri.com/library/whitepapers/pdfs/shapefile.pdf).
 
 ## Install
-
-You will need the [Bitstring](https://github.com/xguerin/bitstring)
-library (version >= 3) to build, which you can install via opam:
 ```
-opam install bitstring
+opam install shapefile
+```
+
+## Build
+
+If you want to build the library from source, you will need dune, menhir and ppx_bitstring:
+```
+opam install dune menhir ppx_bitstring
 ```
 
 Then the usual:
@@ -17,7 +21,6 @@ Then the usual:
 make
 make install
 ```
-(a public opam package is planned when I have time).
 
 ## License
 
