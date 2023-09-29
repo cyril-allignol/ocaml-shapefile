@@ -21,8 +21,7 @@
   (description "OCaml library for the manipulation of ESRI shapefiles (.shp, .shx, .prj).")
   (tags (shapefile esri shp shx prj map geospatial geographic))
   (depends
-    ocaml
+    (ocaml (>= 4.08))
     (bitstring (>= 4.0.0))
     (menhir :build)
-    (ppx_bitstring (and :build (>= 4.0.0)))
-    ))
+    (ppx_bitstring (and :build (>= 4.0.0)))))

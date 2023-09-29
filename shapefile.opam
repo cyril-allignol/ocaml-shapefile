@@ -11,7 +11,7 @@ homepage: "https://github.com/cyril-allignol/ocaml-shapefile"
 bug-reports: "https://github.com/cyril-allignol/ocaml-shapefile/issues"
 depends: [
   "dune" {>= "3.0"}
-  "ocaml"
+  "ocaml" {>= "4.08"}
   "bitstring" {>= "4.0.0"}
   "menhir" {build}
   "ppx_bitstring" {build & >= "4.0.0"}

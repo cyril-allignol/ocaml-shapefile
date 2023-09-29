@@ -16,8 +16,8 @@ let sprint_opt sprint = function
   | None -> ""
   | Some e -> Printf.sprintf ", %s" (sprint e)
 
-let sprint_list = fun sprint l ->
-  List.fold_left (fun acc e -> acc ^ ", " ^ (sprint e)) "" l
+let sprint_list f l =
+  List.map f l |> String.concat ", "
 
 module Parameter = struct
   type t = { name: string; value: float }
