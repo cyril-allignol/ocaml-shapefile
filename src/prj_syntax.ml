@@ -21,7 +21,7 @@ let pp_list pp_v fmt l =
 module Parameter = struct
   type t = { name: string; value: float }
   let pp fmt { name; value } =
-    Format.fprintf fmt {|PARAMETER["%s", %f]"|} name value
+    Format.fprintf fmt {|PARAMETER["%s", %f]|} name value
 end
 
 module MT = struct
