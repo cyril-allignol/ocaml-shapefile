@@ -22,16 +22,16 @@ module type Data = sig
   val a2b: float array -> bbox
 end
 
-let get_int = fun bits -> (* littleendian *)
+let get_int bits = (* littleendian *)
   match%bitstring bits with
   | {| v: 32 : littleendian, bind (b2i v); rem: -1 : bitstring |} -> v, rem
 
-let get_float = fun bits ->
+let get_float bits =
   match%bitstring bits with
   | {| v: 64 : littleendian, bind (Int64.float_of_bits v); rem: -1 : bitstring
      |} -> v, rem
 
-let get_array = fun get_elt size bits ->
+let get_array get_elt size bits =
   let bits = ref bits in
   let a = Array.init size (fun _ ->
     let v, rem = get_elt !bits in
@@ -43,27 +43,30 @@ let get_float_array = get_array get_float
 
 module ShapeMake (D : Data) = struct
 
-  let make_point = fun bits ->
+  let make_point bits =
     let p, rem = get_float_array D.dim bits in
     D.a2p p, rem
 
-  let make_bbox = fun bits ->
+  let make_bbox bits =
     let b, rem = get_float_array (2 * D.dim) bits in
     D.a2b b, rem
 
-  let make_parts = fun n bits -> let parts, _ = get_int_array n bits in parts
+  let make_parts n bits =
+    let parts, _ = get_int_array n bits in
+    parts
 
-  let make_points = fun n bits ->
-    let pts, _ = get_array make_point n bits in pts
+  let make_points n bits =
+    let pts, _ = get_array make_point n bits in
+    pts
 
-  let make_shapes = fun nparts npoints parts points ->
+  let make_shapes nparts npoints parts points =
     let parts = make_parts nparts parts
     and points = make_points npoints points in
     Array.init nparts (fun i ->
       Array.sub points parts.(i)
 	((if i < nparts - 1 then parts.(i+1) else npoints) - parts.(i)))
 
-  let multipoint = fun bits ->
+  let multipoint bits =
     let bbox, bits = make_bbox bits in
     match%bitstring bits with
     | {| npoints: 32 : littleendian, bind (b2i npoints);
@@ -71,7 +74,7 @@ module ShapeMake (D : Data) = struct
        rest: -1 : bitstring |} ->
        bbox, make_points npoints points, rest
 
-  let multishape = fun bits ->
+  let multishape bits =
     let bbox, bits = make_bbox bits in
     match%bitstring bits with
     | {| nparts: 32 : littleendian, bind (b2i nparts);
@@ -90,13 +93,13 @@ module ShpD3M = ShapeMake(D3M)
 
 type header = { length: int; version: int; shape_type: int; bbox: D3M.bbox }
 
-let print_header = fun h ->
+let print_header h =
   Printf.printf "file length = %d\n%!" h.length;
   Printf.printf "version = %d\n%!" h.version;
   Printf.printf "type = %d\n%!" h.shape_type;
   D3M.print_bbox h.bbox
 
-let header = fun bits ->
+let header bits =
   match%bitstring bits with
   | {| code: 32 : bigendian, check (b2i code = 9994);
      _: 5 * 32 : bitstring; (* 5 unused fields (32 bits each) *)

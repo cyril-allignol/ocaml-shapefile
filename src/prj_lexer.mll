@@ -15,9 +15,9 @@
 { open Prj_parser
   open Prj_syntax
 let keyword =
-  let keywords = Hashtbl.create 17 in
+  let keywords = Hashtbl.create 32 in
   let kwds =
-    [ "PARAMETER", PARAMETER; "PARAM_MT", PARAM_MT; "CONCAT_MT", CONCAT_MT;
+    [| "PARAMETER", PARAMETER; "PARAM_MT", PARAM_MT; "CONCAT_MT", CONCAT_MT;
       "INVERSE_MT", INVERSE_MT; "PASSTHROUGH_MT", PASSTHROUGH_MT;
       "NORTH", DIRECTION Axis.North; "SOUTH", DIRECTION Axis.South;
       "EAST", DIRECTION Axis.East; "WEST", DIRECTION Axis.West;
@@ -27,11 +27,12 @@ let keyword =
       "PROJECTION", PROJECTION; "SPHEROID", SPHEROID; "PRIMEM", PRIMEM;
       "DATUM", DATUM; "VERT_DATUM", VERT_DATUM; "LOCAL_DATUM", LOCAL_DATUM;
       "PROJCS", PROJCS; "GEOGCS", GEOGCS; "GEOCCS", GEOCCS; "VERT_CS", VERT_CS;
-      "COMPD_CS", COMPD_CS; "FITTED_CS", FITTED_CS; "LOCAL_CS", LOCAL_CS ] in
-  List.iter (fun (kwd, token) -> Hashtbl.add keywords kwd token) kwds;
+      "COMPD_CS", COMPD_CS; "FITTED_CS", FITTED_CS; "LOCAL_CS", LOCAL_CS |] in
+  Array.iter (fun (kwd, token) -> Hashtbl.add keywords kwd token) kwds;
   fun word ->
-    if Hashtbl.mem keywords word then Hashtbl.find keywords word
-    else failwith ("Unknown keyword: " ^ word)
+    match Hashtbl.find_opt keywords word with
+    | None -> Format.ksprintf failwith "Unknown keyword: %s" word
+    | Some k -> k
 }
 
 let blank = [' ''\t''\r''\n'',']

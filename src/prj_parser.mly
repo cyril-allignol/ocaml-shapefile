@@ -40,89 +40,84 @@ cs: /* coordinate system */
 | local_cs { CS.Local $1 }
 
 projected_cs:
-| PROJCS LP STRING geographic_cs projection params unit auth RP
+| PROJCS LP STRING geographic_cs projection list(parameter) unit option(auth) RP
     { { ProjCS.name = $3; geogcs = $4; projection = $5; params = $6;
 	linear_unit = $7; axes = Axis.projected_default; authority = $8 } }
-| PROJCS LP STRING geographic_cs projection params unit twin_axes auth RP
+| PROJCS LP STRING geographic_cs projection list(parameter) unit twin_axes option(auth) RP
     { { ProjCS.name = $3; geogcs = $4; projection = $5; params = $6;
 	linear_unit = $7; axes = $8; authority = $9 } }
 
 geographic_cs:
-| GEOGCS LP STRING datum prime_meridian unit auth RP
+| GEOGCS LP STRING datum prime_meridian unit option(auth) RP
     { { GeogCS.name = $3; datum = $4; prime_meridian = $5;
 	angular_unit = $6; axes = Axis.geographic_default; authority = $7 } }
-| GEOGCS LP STRING datum prime_meridian unit twin_axes auth RP
+| GEOGCS LP STRING datum prime_meridian unit twin_axes option(auth) RP
     { { GeogCS.name = $3; datum = $4; prime_meridian = $5;
 	angular_unit = $6; axes = $7; authority = $8 } }
 
 geocentric_cs:
-| GEOCCS LP STRING datum prime_meridian unit auth RP
+| GEOCCS LP STRING datum prime_meridian unit option(auth) RP
     { { GeocCS.name = $3; datum = $4; prime_meridian = $5;
 	linear_unit = $6; axes = Axis.geocentric_default; authority = $7 } }
-| GEOCCS LP STRING datum prime_meridian unit triple_axes auth RP
+| GEOCCS LP STRING datum prime_meridian unit triple_axes option(auth) RP
     { { GeocCS.name = $3; datum = $4; prime_meridian = $5;
 	linear_unit = $6; axes = $7; authority = $8 } }
 
 vert_cs:
-| VERT_CS LP STRING vert_datum unit auth RP
+| VERT_CS LP STRING vert_datum unit option(auth) RP
     { { VertCS.name = $3; datum = $4; linear_unit = $5;
 	axis = { Axis.name = "Up"; direction = Axis.Up }; authority = $6 } }
-| VERT_CS LP STRING vert_datum unit axis auth RP
+| VERT_CS LP STRING vert_datum unit axis option(auth) RP
     { { VertCS.name = $3; datum = $4; linear_unit = $5;
 	axis = $6; authority = $7 } }
 
 compd_cs:
-| COMPD_CS LP STRING cs cs auth RP { CS.Compd ($3, $4, $5, $6) }
+| COMPD_CS LP STRING cs cs option(auth) RP { CS.Compd ($3, $4, $5, $6) }
 
 fitted_cs:
 | FITTED_CS LP STRING mt cs RP { CS.Fitted ($3, $4, $5) }
 
 local_cs:
-| LOCAL_CS LP STRING local_datum unit axis axes auth RP
+| LOCAL_CS LP STRING local_datum unit axis list(axis) option(auth) RP
     { { LocalCS.name = $3; datum = $4; unit = $5;
 	axes = $6 :: $7; authority = $8 } }
 
-projection: PROJECTION LP STRING auth RP
+projection: PROJECTION LP STRING option(auth) RP
     { { Projection.name = $3; authority = $4 } }
 
-datum: DATUM LP STRING spheroid to_wgs84 auth RP
+datum: DATUM LP STRING spheroid option(to_wgs84) option(auth) RP
     { { Datum.name = $3; spheroid = $4; toWGS84 = $5; authority = $6 } }
 
-spheroid: SPHEROID LP STRING N N auth RP
+spheroid: SPHEROID LP STRING N N option(auth) RP
     { { Spheroid.name = $3; a = $4; f = $5; authority = $6 } }
 
-prime_meridian: PRIMEM LP STRING N auth RP
+prime_meridian: PRIMEM LP STRING N option(auth) RP
     { { Primem.name = $3; longitude = $4; authority = $5 } }
 
-unit: UNIT LP STRING N auth RP
+unit: UNIT LP STRING N option(auth) RP
     { { Unit.name = $3; cf = $4; authority = $5 } }
 
-auth: { None } | authority { Some $1 }
-authority: AUTHORITY LP STRING STRING RP { { Authority.name = $3; code = $4 } }
+auth: AUTHORITY LP STRING STRING RP { { Authority.name = $3; code = $4 } }
 
 vert_datum:
-| VERT_DATUM LP STRING N auth RP
+| VERT_DATUM LP STRING N option(auth) RP
     { { Vert_datum.name = $3; datum_type = $4; authority = $5 } }
 
 local_datum:
-| LOCAL_DATUM LP STRING N auth RP
+| LOCAL_DATUM LP STRING N option(auth) RP
     { { Local_datum.name = $3; datum_type = $4; authority = $5 } }
 
 axis: AXIS LP STRING DIRECTION RP { { Axis.name = $3; direction = $4 } }
 twin_axes: axis axis { $1, $2 }
 triple_axes: axis axis axis { $1, $2, $3 }
-axes:
-| { [] }
-| axis axes { $1 :: $2 }
 
 to_wgs84:
-| { None }
 | TOWGS84 LP N N N RP
-    { Some { ToWGS84.dx = $3; dy = $4; dz = $5; ex = 0.; ey = 0.; ez = 0.; ppm = 0. } }
+    { { ToWGS84.dx = $3; dy = $4; dz = $5; ex = 0.; ey = 0.; ez = 0.; ppm = 0. } }
 | TOWGS84 LP N N N N N N RP
-    { Some { ToWGS84.dx = $3; dy = $4; dz = $5; ex = $6; ey = $7; ez = $8; ppm = 0. } }
+    { { ToWGS84.dx = $3; dy = $4; dz = $5; ex = $6; ey = $7; ez = $8; ppm = 0. } }
 | TOWGS84 LP N N N N N N N RP
-    { Some { ToWGS84.dx = $3; dy = $4; dz = $5; ex = $6; ey = $7; ez = $8; ppm = $9 } }
+    { { ToWGS84.dx = $3; dy = $4; dz = $5; ex = $6; ey = $7; ez = $8; ppm = $9 } }
 
 mt: /* math transform */
 | param_mt { $1 }
@@ -130,20 +125,12 @@ mt: /* math transform */
 | inv_mt { $1 }
 | passthrough_mt { $1 }
 
-mts:
-| { [] }
-| mt mts { $1 :: $2 }
-
 param_mt:
-| PARAM_MT LP STRING params RP { MT.Param ($3, $4) }
+| PARAM_MT LP STRING list(parameter) RP { MT.Param ($3, $4) }
 
 parameter: PARAMETER LP STRING N RP { { Parameter.name = $3; value = $4 } }
 
-params:
-| { [] }
-| parameter params { $1 :: $2 }
-
-concat_mt: CONCAT_MT LP mt mts RP { MT.Concat ($3 :: $4) }
+concat_mt: CONCAT_MT LP nonempty_list(mt) RP { MT.Concat $3 }
 
 inv_mt: INVERSE_MT LP mt RP { MT.Inverse $3 }
 passthrough_mt: PASSTHROUGH_MT LP N mt RP

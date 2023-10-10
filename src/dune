@@ -1,5 +1,4 @@
 (library
- (name shapefile)
  (public_name shapefile)
  (libraries bitstring)
  (preprocess (pps ppx_bitstring)))

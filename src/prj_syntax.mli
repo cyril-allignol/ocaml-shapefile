@@ -14,7 +14,7 @@
 
 module Parameter : sig
   type t = { name: string; value: float }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module MT : sig (** Math Transform *)
@@ -23,12 +23,12 @@ module MT : sig (** Math Transform *)
     | Concat of t list
     | Inverse of t
     | Passthrough of int * t
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module Authority : sig
   type t = { name: string; code: string }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module Axis : sig
@@ -42,8 +42,8 @@ module Axis : sig
 	  - Projected CS: AXIS["X", EAST], AXIS["Y", NORTH]
 	  - Geocentric CS: AXIS["X", OTHER], AXIS["Y", EAST], AXIS["Z", NORTH]
        *)
-  val sprint: t -> string
-  val sprint_dir: direction -> string
+  val pp: Format.formatter -> t -> unit
+  val pp_dir: Format.formatter -> direction -> unit
   val geographic_default: t * t
   val projected_default: t * t
   val geocentric_default: t * t * t
@@ -55,7 +55,7 @@ module Unit : sig
       cf: float; (** conversion factor to radian or meter *)
       authority: Authority.t option (** related authority, if any *)
     } (** Describes an angular or linear unit, depending on the context. *)
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module Primem : sig
@@ -66,73 +66,73 @@ module Primem : sig
       authority: Authority.t option (** related authority, if any *)
     } (** Reference meridian for measurements. Unit for the longitude depends
 	  on the context. *)
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module ToWGS84 : sig
   type t = { dx: float; dy: float; dz: float;
 	     ex: float; ey: float; ez: float;
 	     ppm: float }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module Spheroid : sig
   type t = { name: string; a: float; f: float; authority: Authority.t option }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module Datum : sig
   type t = { name: string; spheroid: Spheroid.t;
 	     toWGS84: ToWGS84.t option; authority: Authority.t option }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module Vert_datum : sig
   type t = { name: string; datum_type: float; authority: Authority.t option }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module Local_datum : sig
   type t = { name: string; datum_type: float; authority: Authority.t option }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module Projection : sig
   type t = { name: string; authority: Authority.t option }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module GeogCS : sig
   type t = { name: string; datum: Datum.t; prime_meridian: Primem.t;
 	     angular_unit: Unit.t; axes: Axis.t * Axis.t;
 	     authority: Authority.t option }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module ProjCS : sig
   type t = { name: string; geogcs: GeogCS.t; projection: Projection.t;
 	     params: Parameter.t list; linear_unit: Unit.t;
 	     axes: Axis.t * Axis.t; authority: Authority.t option }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module GeocCS : sig
   type t = { name: string; datum: Datum.t; prime_meridian: Primem.t;
 	     linear_unit: Unit.t; axes: Axis.t * Axis.t * Axis.t;
 	     authority: Authority.t option }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module VertCS : sig
   type t = { name: string; datum: Vert_datum.t; linear_unit: Unit.t;
 	     axis: Axis.t; authority: Authority.t option }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module LocalCS : sig
   type t = { name: string; datum: Local_datum.t; unit: Unit.t;
 	     axes: Axis.t list; authority: Authority.t option }
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end
 
 module CS : sig
@@ -144,5 +144,5 @@ module CS : sig
     | Compd of string * t * t * Authority.t option
     | Fitted of string * MT.t * t
     | Local of LocalCS.t
-  val sprint: t -> string
+  val pp: Format.formatter -> t -> unit
 end

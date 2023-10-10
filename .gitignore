@@ -1,11 +1,1 @@
-*~
-*.old
-_log
 _build
-*.docdir
-*.native
-*.byte
-*.d.native
-*.p.byte
-*.install
-**/.merlin
